@@ -83,7 +83,107 @@ namespace l2calculator
             lblEth1effi.Visible = false;
             lblEth1pad.Visible = false;
 
+            
+           void AAL5Bytes(int dataBytes, bool padding)
+        {
+            int totalAAL5Bytes = 0;
+            int totalAAL5Cells = 0;
+            int totalAAL5Padding = 0;
 
+            //1. Calculate number of complete AAL5 packets (max 9180 dataBytes)
+            int numCompletePackets = dataBytes / 9180;
+            int numDataBytesOnLastPacket = dataBytes % 9180;
+
+            //Number of bytes in a complete AAL5 packets
+            int cellsOnCompletePacket = (9180 / 48);
+            int bytesInCompletePacket = 53 * 192;
+            int paddingOnCompletePacket = 12;
+            
+
+            //Number of totalBytes on nonComplete packet
+            int cellsOnNonCompletePacket = numDataBytesOnLastPacket / 48;
+            int paddingOnNonCompletePacket = 40 - (numDataBytesOnLastPacket - (cellsOnNonCompletePacket * 48));
+            int bytesInNonCompletePacket = (cellsOnNonCompletePacket + 1) * 53;
+
+            if (numCompletePackets != 0)
+            {
+                totalAAL5Bytes = (bytesInCompletePacket*numCompletePackets) + bytesInNonCompletePacket;
+                totalAAL5Cells = (cellsOnCompletePacket * numCompletePackets) + cellsOnNonCompletePacket +1;
+                if(numDataBytesOnLastPacket == 0)
+                {
+                    totalAAL5Padding = paddingOnCompletePacket;
+                }else totalAAL5Padding = (paddingOnCompletePacket * numCompletePackets) + paddingOnNonCompletePacket;
+
+            }
+            else
+            {
+                totalAAL5Bytes = bytesInNonCompletePacket;
+                totalAAL5Cells =cellsOnNonCompletePacket +1;
+                totalAAL5Padding = paddingOnNonCompletePacket;
+            }
+
+            //Finally, we calculate the efficiency
+            float efficiency = (float)dataBytes / totalAAL5Bytes;
+      
+          
+            if (padding == true)
+            {
+                System.Console.WriteLine(totalAAL5Padding+ " bytes of padding");
+            }
+
+                lblAal5Title.Visible = true;
+                lblAal5bytes.Text = totalAAL5Bytes.ToString() + " Bytes"; //Calcularlo y meterlo con un ToString
+                lblAal5bytes.Visible = true;
+                lblAal5Cells.Text = totalAAL5Cells.ToString()  + " Cells";
+                lblAal5Cells.Visible = true;
+                lblAal5Effi.Text = efficiency.ToString()  + "% L3/L2 Efficiency";
+                lblAal5Effi.Visible = true;
+                if (padding)
+                {
+                    lblAal5Pad.Text = totalAAL5Padding.ToString() + "Bytes of padding";
+                    lblAal5Pad.Visible = true;
+
+                }
+
+            }
+             
+           void AAL3Bytes(int dataBytes, bool padding)
+        {
+            int totalAAL3Bytes = 0;
+            int totalAAL3Padding = 0;
+            int totalAAL3Cells = 0;
+
+            //Calculate the number of cells full filled
+            totalAAL3Cells = dataBytes / 44;
+
+            //Calculate the not full filled cell
+            int numDataBytesLeft = dataBytes - totalAAL3Cells * 44;
+            totalAAL3Padding = 48 - numDataBytesLeft - 4;
+            totalAAL3Cells++;
+
+            //Calculate the total bytes sent
+            totalAAL3Bytes = totalAAL3Cells * 44;
+
+            //Finally, we calculate the efficiency
+            float efficiency = (float)dataBytes / totalAAL3Bytes;
+            //Print  empty line
+         
+            lblAal3Title.Visible = true;
+            lblAal3bytes.Text = totalAAL3Bytes + " Bytes"; //Calcularlo y meterlo con un ToString
+            lblAal3bytes.Visible = true;
+            lblAal3Cells.Text = totalAAL3Cells + " Cells";
+            lblAal3Cells.Visible = true;
+            lblAal3Effi.Text = efficiency.ToString() + "% L3/L2 Efficiency";
+            lblAal3Effi.Visible = true;
+            if (padding)
+            {
+                lblAal3Pad.Text = totalAAL3Padding.ToString() + "Bytes of padding";
+                lblAal3Pad.Visible = true;
+            }
+
+            }
+             
+             
 
 
 
@@ -102,36 +202,14 @@ namespace l2calculator
                 {
                     Console.WriteLine();
                     //do something
-                    lblAal5Title.Visible = true;
-                    lblAal5bytes.Text = "1"+" Bytes"; //Calcularlo y meterlo con un ToString
-                    lblAal5bytes.Visible = true;
-                    lblAal5Cells.Text = "1111111"+" Cells"; 
-                    lblAal5Cells.Visible = true;
-                    lblAal5Effi.Text = "1"+ "% L3/L2 Efficiency";
-                    lblAal5Effi.Visible = true;
-                    if (cboxPad.Checked) {
-                        lblAal5Pad.Text = "1"+ "Bytes of padding";
-                        lblAal5Pad.Visible = true;
-
-                    }
+                    AAL5Bytes(bytes, cboxPad.Checked);
 
                 }
                 if (index == 1) // AAL3/4
                 {
-                    Console.WriteLine();
-                    //do something
-                    lblAal3Title.Visible = true;
-                    lblAal3bytes.Text = "1"+" Bytes"; //Calcularlo y meterlo con un ToString
-                    lblAal3bytes.Visible = true;
-                    lblAal3Cells.Text = "1"+ " Cells";
-                    lblAal3Cells.Visible = true;
-                    lblAal3Effi.Text = "1" + "% L3/L2 Efficiency";
-                    lblAal3Effi.Visible = true;
-                    if (cboxPad.Checked)
-                    {
-                        lblAal3Pad.Text = "1" + "Bytes of padding";
-                        lblAal3Pad.Visible = true;
-                    }
+                    AAL3Bytes(bytes, cboxPad.Checked);
+                   
+                   
 
                 }
                 if (index == 2) // Eth
