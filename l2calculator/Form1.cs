@@ -93,7 +93,7 @@ namespace l2calculator
             //1. Calculate number of complete AAL5 packets (max 9180 dataBytes)
             int numCompletePackets = dataBytes / 9180;
             int numDataBytesOnLastPacket = dataBytes % 9180;
-
+            
             //Number of bytes in a complete AAL5 packets
             int cellsOnCompletePacket = (9180 / 48);
             int bytesInCompletePacket = 53 * 192;
@@ -128,7 +128,7 @@ namespace l2calculator
           
             if (padding == true)
             {
-                System.Console.WriteLine(totalAAL5Padding+ " bytes of padding");
+                System.Console.WriteLine(totalAAL5Padding+ " Bytes of padding");
             }
 
                 lblAal5Title.Visible = true;
@@ -136,11 +136,11 @@ namespace l2calculator
                 lblAal5bytes.Visible = true;
                 lblAal5Cells.Text = totalAAL5Cells.ToString()  + " Cells";
                 lblAal5Cells.Visible = true;
-                lblAal5Effi.Text = efficiency.ToString()  + "% L3/L2 Efficiency";
+                lblAal5Effi.Text = Math.Round((efficiency * 100), 2).ToString() + " % L3/L2 Efficiency";
                 lblAal5Effi.Visible = true;
                 if (padding)
                 {
-                    lblAal5Pad.Text = totalAAL5Padding.ToString() + "Bytes of padding";
+                    lblAal5Pad.Text = totalAAL5Padding.ToString() + " Bytes of padding";
                     lblAal5Pad.Visible = true;
 
                 }
@@ -166,26 +166,165 @@ namespace l2calculator
 
             //Finally, we calculate the efficiency
             float efficiency = (float)dataBytes / totalAAL3Bytes;
-            //Print  empty line
+            
          
             lblAal3Title.Visible = true;
             lblAal3bytes.Text = totalAAL3Bytes + " Bytes"; //Calcularlo y meterlo con un ToString
             lblAal3bytes.Visible = true;
             lblAal3Cells.Text = totalAAL3Cells + " Cells";
             lblAal3Cells.Visible = true;
-            lblAal3Effi.Text = efficiency.ToString() + "% L3/L2 Efficiency";
+            lblAal3Effi.Text = Math.Round((efficiency * 100), 2).ToString() + " % L3/L2 Efficiency";
             lblAal3Effi.Visible = true;
             if (padding)
             {
-                lblAal3Pad.Text = totalAAL3Padding.ToString() + "Bytes of padding";
+                lblAal3Pad.Text = totalAAL3Padding.ToString() + " Bytes of padding";
                 lblAal3Pad.Visible = true;
             }
 
             }
-             
-             
+
+           void ethernetBytes(int dataBytes, bool padding)
+            {
+                //First, we calculate the total number of bytes
+                int frames = 0;
+                int totalBytes = 0;
+                int paddingBytes = 0;
+                frames = (dataBytes / 1500) + 1;
+                //For a single frame
+                if (frames == 1)
+                {
+                    if (dataBytes < 46)
+                    {
+                        totalBytes = 46 + 18;
+                        paddingBytes = 46 - dataBytes;
+                    }
+                    else
+                    {
+                        totalBytes = dataBytes + 18;
+                        paddingBytes = 0;
+                    }
+                }
+                //For multiple frames
+                else
+                {
+                    int lastFrameData = dataBytes % 1500;
+                    if (lastFrameData == 0)
+                    {
+                        totalBytes = frames * 1518;
+                    }
+                    else
+                    {
+                        //We calculate the size of the last frame
+                        int lastFrameBytes = 0;
+                        if (lastFrameData < 46)
+                        {
+                            lastFrameBytes = 46 + 18;
+                            paddingBytes = 46 - lastFrameData;
+                        }
+                        else
+                        {
+                            lastFrameBytes = lastFrameData + 18;
+                            paddingBytes = 0;
+                        }
+                        //We add the size of the last frame to all the other complete frames
+                        totalBytes = (frames * 1518) + lastFrameBytes;
+                    }
+                }
+                //Finally, we calculate the efficiency
+                float efficiency = (float)dataBytes / totalBytes;
+                //Print  empty line
+                System.Console.WriteLine();
+                lblEthTitle.Visible = true;
+                lblEthbytes.Text = totalBytes.ToString() + " Bytes"; //Calcularlo y meterlo con un ToString
+                lblEthbytes.Visible = true;
+                lblEthFrames.Text = frames.ToString() + " Frames";
+                lblEthFrames.Visible = true;
+                lblEthEffi.Text = Math.Round((efficiency * 100), 2).ToString() + " % L3/L2 Efficiency";
+                lblEthEffi.Visible = true;
+                if (padding)
+                {
+                    lblEthPad.Text = paddingBytes + " Bytes of padding";
+                    lblEthPad.Visible = true;
+
+                }
+            }
+
+           void ethernet1QBytes(int dataBytes, bool padding)
+            {
+                //First, we calculate the total number of bytes
+                int frames = 0;
+                int totalBytes = 0;
+                int paddingBytes = 0;
+                frames = (dataBytes / 1500) + 1;
+                //For a single frame
+                if (frames == 1)
+                {
+                    if (dataBytes < 46)
+                    {
+                        totalBytes = 46 + 22;
+                        paddingBytes = 46 - dataBytes;
+                    }
+                    else
+                    {
+                        totalBytes = dataBytes + 22;
+                        paddingBytes = 0;
+                    }
+                }
+                //For multiple frames
+                else
+                {
+                    int lastFrameData = dataBytes % 1500;
+                    if (lastFrameData == 0)
+                    {
+                        totalBytes = frames * 1522;
+                    }
+                    else
+                    {
+                        //We calculate the size of the last frame
+                        int lastFrameBytes = 0;
+                        if (lastFrameData < 46)
+                        {
+                            lastFrameBytes = 46 + 22;
+                            paddingBytes = 46 - lastFrameData;
+                        }
+                        else
+                        {
+                            lastFrameBytes = lastFrameData + 22;
+                            paddingBytes = 0;
+                        }
+                        //We add the size of the last frame to all the other complete frames
+                        totalBytes = (frames * 1522) + lastFrameBytes;
+                    }
+                }
+                //Finally, we calculate the efficiency
+                float efficiency = (float)dataBytes / totalBytes;
+          
+           
+                if (padding == true)
+                {
+                    System.Console.WriteLine(paddingBytes + " bytes of padding");
+                }
+           
+
+        
+                lblEth1Title.Visible = true;
+                lblEth1Bytes.Text = totalBytes.ToString() + " Bytes"; 
+                lblEth1Bytes.Visible = true;
+                lblEth1frame.Text = frames.ToString()  + " Frames";
+                lblEth1frame.Visible = true;
+                
+                lblEth1effi.Text = Math.Round((efficiency * 100),2).ToString() + " % L3/L2 Efficiency";
+
+                lblEth1effi.Visible = true;
+                if (padding)
+                {
+                    lblEth1pad.Text = paddingBytes.ToString() + " Bytes of padding";
+                    lblEth1pad.Visible = true;
+
+                }
 
 
+            }
 
 
 
@@ -216,42 +355,15 @@ namespace l2calculator
                 {
                     Console.WriteLine();
                     //do something
-                    
-                    //do something
-                    lblEthTitle.Visible = true;
-                    lblEthbytes.Text = "1" + " Bytes"; //Calcularlo y meterlo con un ToString
-                    lblEthbytes.Visible = true;
-                    lblEthFrames.Text = "1"+" Frames";
-                    lblEthFrames.Visible = true;
-                    lblEthEffi.Text = "1" + "% L3/L2 Efficiency";
-                    lblEthEffi.Visible = true;
-                    if (cboxPad.Checked)
-                    {
-                        lblEthPad.Text = "1" + "Bytes of padding";
-                        lblEthPad.Visible = true;
-
-                    }
+                    ethernetBytes(bytes, cboxPad.Checked);  
 
                 }
                 if (index == 3) // Eth1q
                 {
                     Console.WriteLine();
                     //do something
+                    ethernet1QBytes(bytes, cboxPad.Checked);
 
-                    //do something
-                    lblEth1Title.Visible = true;
-                    lblEth1Bytes.Text = "1" + " Bytes"; //Calcularlo y meterlo con un ToString
-                    lblEth1Bytes.Visible = true;
-                    lblEth1frame.Text = "1" + " Frames";
-                    lblEth1frame.Visible = true;
-                    lblEth1effi.Text = "1" + "% L3/L2 Efficiency";
-                    lblEth1effi.Visible = true;
-                    if (cboxPad.Checked)
-                    {
-                        lblEth1pad.Text = "1" + "Bytes of padding";
-                        lblEth1pad.Visible = true;
-
-                    }
                 }
                 
             }
